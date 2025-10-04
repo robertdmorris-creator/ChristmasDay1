@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Secret Mission</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Chewy&family=Inter:wght@400;700&family=Pacifico&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            transition: background 0.5s ease-in-out;
+        }
+        h1, h2, h3 {
+            font-family: 'Chewy', cursive;
+        }
+        #code-inputs input {
+            transition: transform 0.1s ease-in-out;
+        }
+        #code-inputs.shake input {
+            animation: shake 0.5s;
+        }
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+            20%, 40%, 60%, 80% { transform: translateX(5px); }
+        }
+        .font-fancy {
+            font-family: 'Pacifico', cursive;
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-gray-700 to-gray-900 min-h-screen flex items-center justify-center p-4">
+
+    <div id="container" class="w-full max-w-4xl mx-auto">
+
+        <!-- Lock Screen -->
+        <div id="lock-screen" class="bg-slate-50 p-10 rounded-2xl shadow-2xl text-center relative border border-gray-200">
+            
+            <!-- Emoji Display -->
+            <div id="lock-icon" class="text-8xl mb-6">🔒</div>
+            
+            <h1 class="text-3xl font-bold text-gray-800">Secret Message Locked</h1>
+            <p class="text-gray-600 mt-2 mb-8">Enter the 4-digit code to continue.</p>
+            
+            <div id="code-inputs" class="flex justify-center gap-3 mb-4">
+                <input type="number" maxlength="1" class="w-14 h-16 text-4xl text-center border-4 border-gray-300 rounded-lg focus:outline-none focus:border-blue-500">
+                <input type="number" maxlength="1" class="w-14 h-16 text-4xl text-center border-4 border-gray-300 rounded-lg focus:outline-none focus:border-blue-500">
+                <input type="number" maxlength="1" class="w-14 h-16 text-4xl text-center border-4 border-gray-300 rounded-lg focus:outline-none focus:border-blue-500">
+                <input type="number" maxlength="1" class="w-14 h-16 text-4xl text-center border-4 border-gray-300 rounded-lg focus:outline-none focus:border-blue-500">
+            </div>
+        </div>
+
+        <!-- Mission Screen (Initially Hidden) -->
+        <div id="mission-screen" class="bg-slate-50 bg-opacity-90 p-8 rounded-2xl shadow-2xl hidden border border-gray-200">
+            <div class="flex flex-col md:flex-row items-center gap-8">
+                <!-- Left Side: Icon -->
+                <div id="mission-icon" class="text-8xl md:text-9xl animate-bounce flex-shrink-0">🔓</div>
+
+                <!-- Right Side: Content -->
+                <div class="text-center md:text-left">
+                    <h1 class="text-4xl font-bold text-green-700">You Unlocked the Mission!</h1>
+                    
+                    <p id="mission-text" class="font-fancy text-gray-800 text-xl mt-4 bg-white bg-opacity-70 p-6 rounded-lg border">
+                        Hahaha! Did you really think you could name me 'Captain Sparkletoes'? I was watching from the corner of the room hidden away minutes ago as you spun the wheel. When I saw it getting dangerously close to some... questionable names, I had to use a teensy-weensy bit of elf magic! *Poof!* A little magical breeze gave that spinner a nudge right onto the best name of all: BROWNIE! You can't get rid of me that easily!
+        <br><br>
+        Get ready, because this year is going to be epic! We're talking riddles that will tickle your brain and puzzles so tricky you'll need all your brainpower. And speaking of brainpower... I see a new recruit! Welcome, Leon! I hope you're ready for a challenge, because my games are legendary!
+        <br><br>
+        Oh, and a special message for Mr. Bob... Mr. Bob, oh, Mr. Bob. Did you really think you could help them change my name? I've got my eye on you. You should probably check out your precious coffee cup... as I have magically taken away all the coffee and replaced it with something...
+                    </p>
+                    <button id="play-audio-btn" class="mt-6 bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-full shadow-lg transition-transform transform hover:scale-105 flex items-center justify-center mx-auto md:mx-0 disabled:bg-gray-400 disabled:cursor-not-allowed">
+                        <svg class="w-6 h-6 mr-2" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd"></path></svg>
+                        <span id="button-text">Listen to Brownie's Message</span>
+                    </button>
+                    <p id="error-message" class="text-red-500 mt-2 text-sm hidden"></p>
+                </div>
+            </div>
+            
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const lockScreen = document.getElementById('lock-screen');
+            const missionScreen = document.getElementById('mission-screen');
+            const codeInputsContainer = document.getElementById('code-inputs');
+            const inputs = Array.from(codeInputsContainer.querySelectorAll('input'));
+            const playAudioBtn = document.getElementById('play-audio-btn');
+            const missionText = document.getElementById('mission-text').textContent.trim();
+            const errorMessage = document.getElementById('error-message');
+            const buttonText = document.getElementById('button-text');
+
+            let currentAudio = null;
+
+            const correctCode = "1225";
+            
+            function base64ToArrayBuffer(base64) {
+                const binaryString = window.atob(base64);
+                const len = binaryString.length;
+                const bytes = new Uint8Array(len);
+                for (let i = 0; i < len; i++) {
+                    bytes[i] = binaryString.charCodeAt(i);
+                }
+                return bytes.buffer;
+            }
+
+            function pcmToWav(pcmData, sampleRate) {
+                const numChannels = 1;
+                const bitsPerSample = 16;
+                const byteRate = sampleRate * numChannels * bitsPerSample / 8;
+                const blockAlign = numChannels * bitsPerSample / 8;
+                const dataSize = pcmData.length * 2;
+                const buffer = new ArrayBuffer(44 + dataSize);
+                const view = new DataView(buffer);
+                
+                function writeString(view, offset, string) {
+                    for (let i = 0; i < string.length; i++) {
+                        view.setUint8(offset + i, string.charCodeAt(i));
+                    }
+                }
+                
+                writeString(view, 0, 'RIFF');
+                view.setUint32(4, 36 + dataSize, true);
+                writeString(view, 8, 'WAVE');
+                writeString(view, 12, 'fmt ');
+                view.setUint32(16, 16, true);
+                view.setUint16(20, 1, true);
+                view.setUint16(22, numChannels, true);
+                view.setUint32(24, sampleRate, true);
+                view.setUint32(28, byteRate, true);
+                view.setUint16(32, blockAlign, true);
+                view.setUint16(34, bitsPerSample, true);
+                writeString(view, 36, 'data');
+                view.setUint32(40, dataSize, true);
+
+                for (let i = 0; i < pcmData.length; i++) {
+                    view.setInt16(44 + i * 2, pcmData[i], true);
+                }
+
+                return new Blob([view], { type: 'audio/wav' });
+            }
+
+
+            async function fetchAndPlayAudio(text, buttonElem, buttonTextElem) {
+                if (currentAudio) {
+                    currentAudio.pause();
+                    currentAudio.currentTime = 0;
+                }
+                
+                buttonElem.disabled = true;
+                const originalButtonText = buttonTextElem.textContent;
+                buttonTextElem.textContent = 'Loading Audio...';
+                errorMessage.classList.add('hidden');
+
+                const payload = {
+                    contents: [{ parts: [{ text: `In a very high-pitched, squeaky, friendly, young boy's elf voice, say: "${text}"` }] }],
+                    generationConfig: {
+                        responseModalities: ["AUDIO"],
+                        speechConfig: {
+                            voiceConfig: {
+                                prebuiltVoiceConfig: { voiceName: "Leda" }
+                            }
+                        }
+                    },
+                    model: "gemini-2.5-flash-preview-tts"
+                };
+                
+                const apiKey = ""; 
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-tts:generateContent?key=${apiKey}`;
+
+                try {
+                    const response = await fetch(apiUrl, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+                    
+                    if (!response.ok) {
+                        throw new Error(`API request failed with status ${response.status}`);
+                    }
+
+                    const result = await response.json();
+                    const part = result?.candidates?.[0]?.content?.parts?.[0];
+                    const audioData = part?.inlineData?.data;
+                    const mimeType = part?.inlineData?.mimeType;
+
+                    if (audioData && mimeType && mimeType.startsWith("audio/")) {
+                        const sampleRate = parseInt(mimeType.match(/rate=(\d+)/)[1], 10);
+                        const pcmData = base64ToArrayBuffer(audioData);
+                        const pcm16 = new Int16Array(pcmData);
+                        const wavBlob = pcmToWav(pcm16, sampleRate);
+                        const audioUrl = URL.createObjectURL(wavBlob);
+                        currentAudio = new Audio(audioUrl);
+
+                        currentAudio.onplay = () => {
+                             buttonTextElem.textContent = "Playing...";
+                        };
+                        currentAudio.onended = () => {
+                             buttonTextElem.textContent = originalButtonText.includes("Listen") ? "Listen Again" : originalButtonText;
+                             buttonElem.disabled = false;
+                        };
+                        currentAudio.onerror = () => {
+                            throw new Error("Error playing audio.");
+                        }
+                        currentAudio.play();
+
+                    } else {
+                        throw new Error("Invalid audio data received.");
+                    }
+
+                } catch (error) {
+                    console.error("Error fetching or playing audio:", error);
+                    const generalErrorMessage = 'Sorry, could not play the audio. Please try again.';
+                    errorMessage.textContent = generalErrorMessage;
+                    errorMessage.classList.remove('hidden');
+                    buttonTextElem.textContent = originalButtonText;
+                    buttonElem.disabled = false;
+                }
+            }
+            
+            playAudioBtn.addEventListener('click', () => {
+                fetchAndPlayAudio(missionText, playAudioBtn, buttonText);
+            });
+
+            codeInputsContainer.addEventListener('input', (e) => {
+                const target = e.target;
+                const val = target.value;
+                
+                if (isNaN(val)) {
+                    target.value = '';
+                    return;
+                }
+
+                if (val != '') {
+                    const next = target.nextElementSibling;
+                    if (next) {
+                        next.focus();
+                    } else {
+                        validateCode();
+                    }
+                }
+            });
+
+            codeInputsContainer.addEventListener('keydown', (e) => {
+                const target = e.target;
+                
+                if (e.key === 'Backspace' && target.value === '') {
+                    const prev = target.previousElementSibling;
+                    if (prev) {
+                        prev.focus();
+                    }
+                }
+            });
+
+            function validateCode() {
+                const enteredCode = inputs.map(input => input.value).join('');
+                if (enteredCode === correctCode) {
+                    const svgPattern = `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='100'%3E%3Ctext x='10' y='50' font-size='20' fill='rgba(255,255,255,0.2)' font-family='Chewy, cursive' transform='rotate(-20 50 50)'%3EBrownie%27s Back%3C/text%3E%3C/svg%3E")`;
+                    const redToBlackGradient = 'linear-gradient(to bottom right, #b91c1c, #000000)';
+
+                    document.body.style.backgroundImage = `${svgPattern}, ${redToBlackGradient}`;
+                    
+                    lockScreen.classList.add('hidden');
+                    missionScreen.classList.remove('hidden');
+                } else {
+                    codeInputsContainer.classList.add('shake');
+                    inputs.forEach(input => input.value = '');
+                    inputs[0].focus();
+                    setTimeout(() => {
+                        codeInputsContainer.classList.remove('shake');
+                    }, 500);
+                }
+            }
+        });
+
+    </script>
+</body>
+</html>
+
