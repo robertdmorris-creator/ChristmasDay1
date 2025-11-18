@@ -3,286 +3,563 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Secret Mission</title>
+    <title>Message from Brownie</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <!-- Removed 'Inter' font and kept 'Chewy' and 'Pacifico' -->
-    <link href="https://fonts.googleapis.com/css2?family=Chewy&family=Pacifico&display=swap" rel="stylesheet">
+    <!-- Lexend font for readability -->
+    <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;600;700&family=Mountains+of+Christmas:wght@700&display=swap" rel="stylesheet">
+    <!-- Phosphor Icons -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+
     <style>
         body {
-            /* Changed font-family to Verdana for readability */
-            font-family: 'Verdana', sans-serif;
-            transition: background 0.5s ease-in-out;
+            font-family: 'Lexend', sans-serif;
+            /* Candy Cane Background */
+            background: repeating-linear-gradient(
+                45deg,
+                #ef4444,
+                #ef4444 20px,
+                #f8fafc 20px,
+                #f8fafc 40px
+            );
+            min-height: 100vh;
         }
-        h1, h2, h3 {
-            font-family: 'Chewy', cursive;
+
+        .christmas-shadow {
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3), 0 10px 10px -5px rgba(0, 0, 0, 0.1);
         }
-        #code-inputs input {
-            transition: transform 0.1s ease-in-out;
+
+        /* Keypad Button Styles */
+        .keypad-btn {
+            @apply bg-white text-green-800 text-2xl font-bold rounded-full shadow-lg border-b-4 border-green-200 active:border-b-0 active:translate-y-1 transition-all duration-100 flex items-center justify-center h-16 w-16 mx-auto;
         }
-        #code-inputs.shake input {
-            animation: shake 0.5s;
+        .keypad-btn:hover {
+            @apply bg-green-50 text-green-900 scale-105;
         }
+
+        /* Shake animation for wrong code */
         @keyframes shake {
             0%, 100% { transform: translateX(0); }
-            10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
-            20%, 40%, 60%, 80% { transform: translateX(5px); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
         }
-        .font-fancy {
-            font-family: 'Pacifico', cursive;
+        .shake {
+            animation: shake 0.4s ease-in-out;
+            border-color: #ef4444 !important;
+            color: #ef4444 !important;
+        }
+
+        /* Unlock Animation */
+        @keyframes unlock-bounce {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.2) rotate(-10deg); }
+            100% { transform: scale(1) rotate(0deg); }
+        }
+        .unlock-anim {
+            animation: unlock-bounce 0.6s ease-out;
+            color: #22c55e !important; /* Green color */
+        }
+
+        .readable-text {
+            line-height: 1.8;
+            letter-spacing: 0.02em;
+        }
+        
+        .festive-font {
+            font-family: 'Mountains of Christmas', cursive;
+        }
+
+        /* Range Slider Styling */
+        input[type=range] {
+            -webkit-appearance: none;
+            width: 100%;
+            background: transparent;
+        }
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            height: 20px;
+            width: 20px;
+            border-radius: 50%;
+            background: #ef4444;
+            margin-top: -8px;
+            cursor: pointer;
+            border: 2px solid white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+        input[type=range]::-webkit-slider-runnable-track {
+            width: 100%;
+            height: 4px;
+            cursor: pointer;
+            background: #cbd5e1;
+            border-radius: 2px;
         }
     </style>
 </head>
-<body class="bg-gradient-to-br from-gray-700 to-gray-900 min-h-screen flex items-center justify-center p-4">
+<body class="flex items-center justify-center p-4">
 
-    <div id="container" class="w-full max-w-4xl mx-auto">
+    <div class="max-w-2xl w-full relative">
+        
+        <!-- Settings Button (Always visible for Teacher) -->
+        <button onclick="toggleSettings()" class="fixed top-4 right-4 z-50 bg-white/80 p-2 rounded-full text-slate-400 hover:text-slate-700 hover:bg-white transition-all backdrop-blur-sm shadow-sm" title="Elf Voice Lab">
+            <i class="ph-fill ph-gear text-2xl"></i>
+        </button>
 
-        <!-- Lock Screen -->
-        <div id="lock-screen" class="bg-slate-50 p-10 rounded-2xl shadow-2xl text-center relative border border-gray-200">
-            
-            <!-- Emoji Display -->
-            <div id="lock-icon" class="text-8xl mb-6">🔒</div>
-            
-            <h1 class="text-3xl font-bold text-gray-800">Secret Message Locked</h1>
-            <p class="text-gray-600 mt-2 mb-8">Enter the 4-digit code to continue.</p>
-            
-            <div id="code-inputs" class="flex justify-center gap-3 mb-4">
-                <input type="number" maxlength="1" class="w-14 h-16 text-4xl text-center border-4 border-gray-300 rounded-lg focus:outline-none focus:border-blue-500">
-                <input type="number" maxlength="1" class="w-14 h-16 text-4xl text-center border-4 border-gray-300 rounded-lg focus:outline-none focus:border-blue-500">
-                <input type="number" maxlength="1" class="w-14 h-16 text-4xl text-center border-4 border-gray-300 rounded-lg focus:outline-none focus:border-blue-500">
-                <input type="number" maxlength="1" class="w-14 h-16 text-4xl text-center border-4 border-gray-300 rounded-lg focus:outline-none focus:border-blue-500">
-            </div>
-        </div>
-
-        <!-- Mission Screen (Initially Hidden) -->
-        <div id="mission-screen" class="bg-slate-50 bg-opacity-90 p-8 rounded-2xl shadow-2xl hidden border border-gray-200">
-            <div class="flex flex-col md:flex-row items-center gap-8">
-                <!-- Left Side: Icon -->
-                <div id="mission-icon" class="text-8xl md:text-9xl animate-bounce flex-shrink-0">🔓</div>
-
-                <!-- Right Side: Content -->
-                <div class="text-center md:text-left">
-                    <h1 class="text-4xl font-bold text-green-700">You Unlocked the Mission!</h1>
-                    
-                    <p id="mission-text" class="font-fancy text-gray-800 text-xl mt-4 bg-white bg-opacity-70 p-6 rounded-lg border">
-                        Hahaha! Did you really think you could name me 'Captain Sparkletoes'? I was watching from the corner of the room hidden away minutes ago as you spun the wheel. When I saw it getting dangerously close to some... questionable names, I had to use a teensy-weensy bit of elf magic! *Poof!* A little magical breeze gave that spinner a nudge right onto the best name of all: BROWNIE! You can't get rid of me that easily!
-        <br><br>
-        Get ready, because this year is going to be epic! We're talking riddles that will tickle your brain and puzzles so tricky you'll need all your brainpower. And speaking of brainpower... I see a new recruit! Welcome, Leon! I hope you're ready for a challenge, because my games are legendary!
-        <br><br>
-        Oh, and a special message for Mr. Bob... Mr. Bob, oh, Mr. Bob. Did you really think you could help them change my name? I've got my eye on you. You should probably check out your precious coffee cup... as I have magically taken away all the coffee and replaced it with something...
-                    </p>
-                    <button id="play-audio-btn" class="mt-6 bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-full shadow-lg transition-transform transform hover:scale-105 flex items-center justify-center mx-auto md:mx-0 disabled:bg-gray-400 disabled:cursor-not-allowed">
-                        <svg class="w-6 h-6 mr-2" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd"></path></svg>
-                        <span id="button-text">Listen to Brownie's Message</span>
+        <!-- SETTINGS MODAL -->
+        <div id="settingsPanel" class="hidden fixed inset-0 bg-black/50 z-40 flex items-center justify-center backdrop-blur-sm">
+            <div class="bg-white rounded-2xl p-6 max-w-md w-full mx-4 shadow-2xl border-4 border-slate-200">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-xl font-bold text-slate-800 flex items-center gap-2">
+                        <i class="ph-fill ph-faders text-purple-600"></i> Elf Voice Lab
+                    </h2>
+                    <button onclick="toggleSettings()" class="text-slate-400 hover:text-slate-600">
+                        <i class="ph-bold ph-x text-xl"></i>
                     </button>
-                    <p id="error-message" class="text-red-500 mt-2 text-sm hidden"></p>
+                </div>
+
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-bold text-slate-700 mb-2">Choose Voice</label>
+                        <select id="voiceSelect" class="w-full p-3 rounded-lg border-2 border-slate-200 bg-slate-50 focus:border-purple-500 outline-none text-sm">
+                            <option>Loading voices...</option>
+                        </select>
+                        <p class="text-xs text-slate-500 mt-1">Tip: Select "Google US English", "Zira", or "Samantha" for best results.</p>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-bold text-slate-700 mb-2">Pitch (Squeakiness)</label>
+                        <div class="flex items-center gap-3">
+                            <span class="text-xs font-bold text-slate-400">Low</span>
+                            <input type="range" id="pitchRange" min="0.1" max="2" step="0.1" value="1.6" class="flex-1">
+                            <span class="text-xs font-bold text-slate-400">High</span>
+                        </div>
+                        <div class="text-center text-sm font-mono text-purple-600 mt-1" id="pitchValue">1.6</div>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-bold text-slate-700 mb-2">Speed</label>
+                        <div class="flex items-center gap-3">
+                            <span class="text-xs font-bold text-slate-400">Slow</span>
+                            <input type="range" id="rateRange" min="0.5" max="2" step="0.1" value="1.1" class="flex-1">
+                            <span class="text-xs font-bold text-slate-400">Fast</span>
+                        </div>
+                        <div class="text-center text-sm font-mono text-purple-600 mt-1" id="rateValue">1.1</div>
+                    </div>
+                </div>
+
+                <div class="mt-8 flex gap-3">
+                    <button onclick="testVoice()" class="flex-1 bg-purple-100 text-purple-700 py-3 rounded-xl font-bold hover:bg-purple-200 transition-colors">
+                        Test Voice
+                    </button>
+                    <button onclick="saveAndClose()" class="flex-1 bg-green-600 text-white py-3 rounded-xl font-bold hover:bg-green-700 shadow-lg shadow-green-200 transition-colors">
+                        Save
+                    </button>
                 </div>
             </div>
-            
         </div>
+
+        <!-- LOCK SCREEN -->
+        <div id="lockScreen" class="bg-white/95 backdrop-blur-sm rounded-3xl christmas-shadow p-8 md:p-10 max-w-md mx-auto border-8 border-green-600 relative">
+            <!-- Decorative Bow -->
+            <div class="absolute -top-8 left-1/2 transform -translate-x-1/2 text-red-600 drop-shadow-lg">
+                <i class="ph-fill ph-ribbon text-6xl"></i>
+            </div>
+
+            <div class="text-center mb-8 mt-4">
+                <div id="lockIconContainer" class="bg-red-100 w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-4 text-red-600 border-4 border-red-200 shadow-inner transition-colors duration-500">
+                    <i id="lockIcon" class="ph-fill ph-lock-key text-5xl"></i>
+                </div>
+                <h1 class="text-3xl font-bold text-green-800 mb-2 festive-font tracking-wide">Elf Security</h1>
+                <p class="text-slate-600 font-medium">Enter code 1225 to unlock</p>
+            </div>
+
+            <!-- Code Display -->
+            <div class="mb-8 flex justify-center gap-3" id="codeDisplay">
+                <div class="w-14 h-16 bg-slate-50 rounded-xl border-2 border-slate-300 flex items-center justify-center text-3xl font-bold text-slate-800 shadow-inner code-digit transition-all"></div>
+                <div class="w-14 h-16 bg-slate-50 rounded-xl border-2 border-slate-300 flex items-center justify-center text-3xl font-bold text-slate-800 shadow-inner code-digit transition-all"></div>
+                <div class="w-14 h-16 bg-slate-50 rounded-xl border-2 border-slate-300 flex items-center justify-center text-3xl font-bold text-slate-800 shadow-inner code-digit transition-all"></div>
+                <div class="w-14 h-16 bg-slate-50 rounded-xl border-2 border-slate-300 flex items-center justify-center text-3xl font-bold text-slate-800 shadow-inner code-digit transition-all"></div>
+            </div>
+
+            <!-- Keypad -->
+            <div class="grid grid-cols-3 gap-y-4 gap-x-4 mb-4 max-w-[280px] mx-auto">
+                <button class="keypad-btn" onclick="addNumber(1)">1</button>
+                <button class="keypad-btn" onclick="addNumber(2)">2</button>
+                <button class="keypad-btn" onclick="addNumber(3)">3</button>
+                <button class="keypad-btn" onclick="addNumber(4)">4</button>
+                <button class="keypad-btn" onclick="addNumber(5)">5</button>
+                <button class="keypad-btn" onclick="addNumber(6)">6</button>
+                <button class="keypad-btn" onclick="addNumber(7)">7</button>
+                <button class="keypad-btn" onclick="addNumber(8)">8</button>
+                <button class="keypad-btn" onclick="addNumber(9)">9</button>
+                <button class="keypad-btn !text-red-500 !bg-red-50 !border-red-200 hover:!bg-red-100" onclick="clearCode()">
+                    <i class="ph-bold ph-backspace"></i>
+                </button>
+                <button class="keypad-btn" onclick="addNumber(0)">0</button>
+                <button class="keypad-btn !bg-green-500 hover:!bg-green-600 !text-white !border-green-700" onclick="checkCode()">
+                    <i class="ph-bold ph-check"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- UNLOCKED LETTER (Hidden initially) -->
+        <div id="letterContainer" class="hidden opacity-0 transform scale-95 transition-all duration-500">
+            
+            <!-- Header with TTS Controls -->
+            <div class="flex flex-col sm:flex-row justify-between items-center mb-6 gap-4 bg-white/90 p-4 rounded-2xl shadow-md backdrop-blur-sm">
+                <div class="flex items-center gap-3">
+                    <div class="h-12 w-12 bg-green-600 rounded-full flex items-center justify-center text-white text-2xl border-4 border-red-500 shadow-sm">
+                        <i class="ph-fill ph-gift"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-2xl font-bold text-green-800 festive-font">Brownie</h1>
+                        <p class="text-xs text-red-600 font-bold tracking-wider">NORTH POLE EXPRESS</p>
+                    </div>
+                </div>
+
+                <button id="speakBtn" onclick="toggleSpeech()" class="w-full sm:w-auto bg-red-600 hover:bg-red-700 text-white px-5 py-3 rounded-xl font-bold shadow-md flex items-center justify-center gap-2 transition-all active:scale-95 border-b-4 border-red-800 active:border-b-0 active:translate-y-1">
+                    <i id="speakIcon" class="ph-fill ph-speaker-high text-xl"></i>
+                    <span id="btnText">Read to Me</span>
+                </button>
+            </div>
+
+            <!-- The Letter Paper -->
+            <div class="bg-white p-8 md:p-12 rounded-2xl christmas-shadow border-t-[16px] border-red-500 relative overflow-hidden">
+                
+                <!-- Watermark/Decor -->
+                <div class="absolute top-0 right-0 opacity-10 pointer-events-none">
+                    <i class="ph-fill ph-tree-evergreen text-9xl text-green-900"></i>
+                </div>
+                <div class="absolute bottom-0 left-0 opacity-10 pointer-events-none">
+                    <i class="ph-fill ph-snowflake text-8xl text-blue-900"></i>
+                </div>
+
+                <div id="letterContent" class="readable-text text-xl md:text-2xl text-slate-800 relative z-10">
+                    <p class="mb-6 font-bold text-green-700">Hahaha!</p>
+                    
+                    <p class="mb-6">
+                        Did you really think you could name me <span class="text-red-600 font-bold">'Captain Sparkletoes'</span>? I was watching from the corner of the room hidden away minutes ago as you spun the wheel.
+                    </p>
+                    
+                    <p class="mb-6">
+                        When I saw it getting dangerously close to some... questionable names, I had to use a teensy-weensy bit of elf magic! <span class="italic font-bold text-purple-600">*Poof!*</span> A little magical breeze gave that spinner a nudge right onto the best name of all: <span class="font-bold text-green-700 text-3xl festive-font">BROWNIE!</span> You can't get rid of me that easily!
+                    </p>
+                    
+                    <p class="mb-6">
+                        Get ready, because this year is going to be epic! We're talking riddles that will tickle your brain and puzzles so tricky you'll need all your brainpower.
+                    </p>
+                    
+                    <p class="mb-6 bg-yellow-50 p-4 rounded-xl border-2 border-yellow-200">
+                        And speaking of brainpower... I see a new recruit! <span class="font-bold text-blue-600 text-3xl festive-font">Welcome, Leon!</span> I hope you're ready for a challenge, because my games are legendary!
+                    </p>
+
+                    <p class="mb-8">
+                        Oh, and a special message for <span class="font-bold">Mr. Bob</span>... Mr. Bob, oh, Mr. Bob. Did you really think you could help them change my name? I've got my eye on you. You should probably check out your precious coffee cup... as I have magically taken away all the coffee and replaced it with something....
+                    </p>
+
+                    <div class="flex flex-col items-center justify-center mt-10 pt-8 border-t-4 border-dotted border-red-200">
+                        <span class="text-2xl font-bold text-slate-400 mb-2">Mischievously yours,</span>
+                        <span class="text-5xl text-red-600 transform -rotate-6 font-bold drop-shadow-sm festive-font">Brownie</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Relock button -->
+             <div class="mt-8 text-center pb-8">
+                <button onclick="relock()" class="bg-white/80 hover:bg-white text-green-800 px-6 py-2 rounded-full font-bold shadow-sm backdrop-blur-md transition-all">
+                    <i class="ph-bold ph-lock-key"></i> Lock Message Again
+                </button>
+            </div>
+        </div>
+
     </div>
 
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const lockScreen = document.getElementById('lock-screen');
-            const missionScreen = document.getElementById('mission-screen');
-            const codeInputsContainer = document.getElementById('code-inputs');
-            const inputs = Array.from(codeInputsContainer.querySelectorAll('input'));
-            const playAudioBtn = document.getElementById('play-audio-btn');
-            const missionText = document.getElementById('mission-text').textContent.trim();
-            const errorMessage = document.getElementById('error-message');
-            const buttonText = document.getElementById('button-text');
+        // --- ELF VOICE LAB (New Code) ---
+        let voices = [];
+        const voiceSelect = document.getElementById('voiceSelect');
+        const pitchRange = document.getElementById('pitchRange');
+        const rateRange = document.getElementById('rateRange');
+        const settingsPanel = document.getElementById('settingsPanel');
+        
+        // Update value displays
+        pitchRange.oninput = () => document.getElementById('pitchValue').innerText = pitchRange.value;
+        rateRange.oninput = () => document.getElementById('rateValue').innerText = rateRange.value;
 
-            let currentAudio = null;
-
-            const correctCode = "1225";
+        // Load Voices into Dropdown
+        function populateVoiceList() {
+            voices = window.speechSynthesis.getVoices();
+            voiceSelect.innerHTML = '';
             
-            function base64ToArrayBuffer(base64) {
-                const binaryString = window.atob(base64);
-                const len = binaryString.length;
-                const bytes = new Uint8Array(len);
-                for (let i = 0; i < len; i++) {
-                    bytes[i] = binaryString.charCodeAt(i);
-                }
-                return bytes.buffer;
+            voices.forEach((voice, index) => {
+                const option = document.createElement('option');
+                option.textContent = `${voice.name} (${voice.lang})`;
+                option.setAttribute('data-lang', voice.lang);
+                option.setAttribute('data-name', voice.name);
+                option.value = index;
+                voiceSelect.appendChild(option);
+            });
+
+            // Try to select a saved voice, or a default female one
+            const savedName = localStorage.getItem('elfVoiceName');
+            if (savedName) {
+                const savedIndex = voices.findIndex(v => v.name === savedName);
+                if (savedIndex > -1) voiceSelect.value = savedIndex;
+            } else {
+                // Default logic
+                const defaultIndex = voices.findIndex(v => v.name.includes('Zira') || v.name.includes('Google US English') || v.name.includes('Samantha'));
+                if (defaultIndex > -1) voiceSelect.value = defaultIndex;
             }
+        }
 
-            function pcmToWav(pcmData, sampleRate) {
-                const numChannels = 1;
-                const bitsPerSample = 16;
-                const byteRate = sampleRate * numChannels * bitsPerSample / 8;
-                const blockAlign = numChannels * bitsPerSample / 8;
-                const dataSize = pcmData.length * 2;
-                const buffer = new ArrayBuffer(44 + dataSize);
-                const view = new DataView(buffer);
-                
-                function writeString(view, offset, string) {
-                    for (let i = 0; i < string.length; i++) {
-                        view.setUint8(offset + i, string.charCodeAt(i));
-                    }
-                }
-                
-                writeString(view, 0, 'RIFF');
-                view.setUint32(4, 36 + dataSize, true);
-                writeString(view, 8, 'WAVE');
-                writeString(view, 12, 'fmt ');
-                view.setUint32(16, 16, true);
-                view.setUint16(20, 1, true);
-                view.setUint16(22, numChannels, true);
-                view.setUint32(24, sampleRate, true);
-                view.setUint32(28, byteRate, true);
-                view.setUint16(32, blockAlign, true);
-                view.setUint16(34, bitsPerSample, true);
-                writeString(view, 36, 'data');
-                view.setUint32(40, dataSize, true);
-
-                for (let i = 0; i < pcmData.length; i++) {
-                    view.setInt16(44 + i * 2, pcmData[i], true);
-                }
-
-                return new Blob([view], { type: 'audio/wav' });
-            }
-
-
-            async function fetchAndPlayAudio(text, buttonElem, buttonTextElem) {
-                if (currentAudio) {
-                    currentAudio.pause();
-                    currentAudio.currentTime = 0;
-                }
-                
-                buttonElem.disabled = true;
-                const originalButtonText = buttonTextElem.textContent;
-                buttonTextElem.textContent = 'Loading Audio...';
-                errorMessage.classList.add('hidden');
-
-                const payload = {
-                    contents: [{ parts: [{ text: `In a very high-pitched, squeaky, friendly, young boy's elf voice, say: "${text}"` }] }],
-                    generationConfig: {
-                        responseModalities: ["AUDIO"],
-                        speechConfig: {
-                            voiceConfig: {
-                                prebuiltVoiceConfig: { voiceName: "Leda" }
-                            }
-                        }
-                    },
-                    model: "gemini-2.5-flash-preview-tts"
-                };
-                
-                const apiKey = ""; 
-                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-tts:generateContent?key=${apiKey}`;
-
-                try {
-                    const response = await fetch(apiUrl, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(payload)
-                    });
-                    
-                    if (!response.ok) {
-                        throw new Error(`API request failed with status ${response.status}`);
-                    }
-
-                    const result = await response.json();
-                    const part = result?.candidates?.[0]?.content?.parts?.[0];
-                    const audioData = part?.inlineData?.data;
-                    const mimeType = part?.inlineData?.mimeType;
-
-                    if (audioData && mimeType && mimeType.startsWith("audio/")) {
-                        // **FIX:** Added robust parsing for sample rate
-                        const rateMatch = mimeType.match(/rate=(\d+)/);
-                        if (!rateMatch || !rateMatch[1]) {
-                            throw new Error(`Could not parse sample rate from mimeType: ${mimeType}`);
-                        }
-                        const sampleRate = parseInt(rateMatch[1], 10);
-                        
-                        const pcmData = base64ToArrayBuffer(audioData);
-                        const pcm16 = new Int16Array(pcmData);
-                        const wavBlob = pcmToWav(pcm16, sampleRate);
-                        const audioUrl = URL.createObjectURL(wavBlob);
-                        currentAudio = new Audio(audioUrl);
-
-                        currentAudio.onplay = () => {
-                             buttonTextElem.textContent = "Playing...";
-                        };
-                        currentAudio.onended = () => {
-                             buttonTextElem.textContent = originalButtonText.includes("Listen") ? "Listen Again" : originalButtonText;
-                             buttonElem.disabled = false;
-                        };
-                        currentAudio.onerror = () => {
-                            throw new Error("Error playing audio.");
-                        }
-                        currentAudio.play();
-
-                    } else {
-                        throw new Error("Invalid audio data received.");
-                    }
-
-                } catch (error) {
-                    console.error("Error fetching or playing audio:", error);
-                    const generalErrorMessage = 'Sorry, could not play the audio. Please try again.';
-                    errorMessage.textContent = generalErrorMessage;
-                    errorMessage.classList.remove('hidden');
-                    buttonTextElem.textContent = originalButtonText;
-                    buttonElem.disabled = false;
-                }
-            }
+        // Load saved settings
+        function loadSettings() {
+            const savedPitch = localStorage.getItem('elfPitch');
+            const savedRate = localStorage.getItem('elfRate');
             
-            playAudioBtn.addEventListener('click', () => {
-                fetchAndPlayAudio(missionText, playAudioBtn, buttonText);
+            if (savedPitch) {
+                pitchRange.value = savedPitch;
+                document.getElementById('pitchValue').innerText = savedPitch;
+            }
+            if (savedRate) {
+                rateRange.value = savedRate;
+                document.getElementById('rateValue').innerText = savedRate;
+            }
+        }
+
+        window.speechSynthesis.onvoiceschanged = populateVoiceList;
+
+        function toggleSettings() {
+            if (voices.length === 0) populateVoiceList();
+            settingsPanel.classList.toggle('hidden');
+        }
+
+        function saveAndClose() {
+            const selectedOption = voiceSelect.selectedOptions[0];
+            if (selectedOption) {
+                localStorage.setItem('elfVoiceName', selectedOption.getAttribute('data-name'));
+            }
+            localStorage.setItem('elfPitch', pitchRange.value);
+            localStorage.setItem('elfRate', rateRange.value);
+            settingsPanel.classList.add('hidden');
+        }
+
+        function testVoice() {
+            window.speechSynthesis.cancel();
+            const utterance = new SpeechSynthesisUtterance("Hello! I am Brownie the Elf!");
+            const selectedOption = voiceSelect.selectedOptions[0];
+            if (selectedOption) {
+                utterance.voice = voices[voiceSelect.value];
+            }
+            utterance.pitch = pitchRange.value;
+            utterance.rate = rateRange.value;
+            window.speechSynthesis.speak(utterance);
+        }
+
+        // --- APP LOGIC ---
+
+        // Audio Context for Sounds
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+        function playBuzzer() {
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            const oscillator = audioCtx.createOscillator();
+            const gainNode = audioCtx.createGain();
+            oscillator.type = 'sawtooth';
+            oscillator.frequency.setValueAtTime(150, audioCtx.currentTime); 
+            oscillator.frequency.exponentialRampToValueAtTime(100, audioCtx.currentTime + 0.3);
+            gainNode.gain.setValueAtTime(0.5, audioCtx.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+            oscillator.connect(gainNode);
+            gainNode.connect(audioCtx.destination);
+            oscillator.start();
+            oscillator.stop(audioCtx.currentTime + 0.3);
+        }
+
+        function playChime() {
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            const now = audioCtx.currentTime;
+            const notes = [523.25, 659.25, 783.99, 1046.50];
+            notes.forEach((freq, index) => {
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(freq, now + (index * 0.1));
+                gain.gain.setValueAtTime(0, now + (index * 0.1));
+                gain.gain.linearRampToValueAtTime(0.3, now + (index * 0.1) + 0.05);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + (index * 0.1) + 1.5);
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.start(now + (index * 0.1));
+                osc.stop(now + (index * 0.1) + 1.5);
             });
+        }
 
-            codeInputsContainer.addEventListener('input', (e) => {
-                const target = e.target;
-                const val = target.value;
-                
-                if (isNaN(val)) {
-                    target.value = '';
-                    return;
-                }
+        // Lock Logic
+        let currentCode = "";
+        const correctCode = "1225";
+        const displayDigits = document.querySelectorAll('.code-digit');
+        const lockScreen = document.getElementById('lockScreen');
+        const letterContainer = document.getElementById('letterContainer');
+        const lockIcon = document.getElementById('lockIcon');
+        const lockIconContainer = document.getElementById('lockIconContainer');
 
-                if (val != '') {
-                    const next = target.nextElementSibling;
-                    if (next) {
-                        next.focus();
-                    } else {
-                        validateCode();
-                    }
-                }
-            });
+        function addNumber(num) {
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            if (currentCode.length < 4) {
+                currentCode += num;
+                updateDisplay();
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(800, audioCtx.currentTime);
+                gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.05);
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.start();
+                osc.stop(audioCtx.currentTime + 0.05);
+            }
+        }
 
-            codeInputsContainer.addEventListener('keydown', (e) => {
-                const target = e.target;
-                
-                if (e.key === 'Backspace' && target.value === '') {
-                    const prev = target.previousElementSibling;
-                    if (prev) {
-                        prev.focus();
-                    }
-                }
-            });
+        function clearCode() {
+            currentCode = currentCode.slice(0, -1);
+            updateDisplay();
+        }
 
-            function validateCode() {
-                const enteredCode = inputs.map(input => input.value).join('');
-                if (enteredCode === correctCode) {
-                    const svgPattern = `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='100'%3E%3Ctext x='10' y='50' font-size='20' fill='rgba(255,255,255,0.2)' font-family='Chewy, cursive' transform='rotate(-20 50 50)'%3EBrownie%27s Back%3C/text%3E%3C/svg%3E")`;
-                    const redToBlackGradient = 'linear-gradient(to bottom right, #b91c1c, #000000)';
-
-                    document.body.style.backgroundImage = `${svgPattern}, ${redToBlackGradient}`;
-                    
-                    lockScreen.classList.add('hidden');
-                    missionScreen.classList.remove('hidden');
+        function updateDisplay() {
+            displayDigits.forEach((digit, index) => {
+                if (index < currentCode.length) {
+                    digit.textContent = currentCode[index];
+                    digit.classList.add('border-green-500', 'text-green-700');
+                    digit.classList.remove('border-slate-300', 'text-slate-800');
                 } else {
-                    codeInputsContainer.classList.add('shake');
-                    inputs.forEach(input => input.value = '');
-                    inputs[0].focus();
-                    setTimeout(() => {
-                        codeInputsContainer.classList.remove('shake');
-                    }, 500);
+                    digit.textContent = "";
+                    digit.classList.remove('border-green-500', 'text-green-700');
+                    digit.classList.add('border-slate-300', 'text-slate-800');
                 }
-            }
-        });
+            });
+        }
 
+        function checkCode() {
+            if (currentCode === correctCode) {
+                playChime();
+                animateUnlock();
+            } else {
+                playBuzzer();
+                const displayBox = document.getElementById('codeDisplay');
+                displayBox.classList.add('shake');
+                displayBox.addEventListener('animationend', () => {
+                    displayBox.classList.remove('shake');
+                }, { once: true });
+                currentCode = "";
+                setTimeout(updateDisplay, 400);
+            }
+        }
+
+        function animateUnlock() {
+            lockIcon.className = "ph-fill ph-lock-key-open";
+            lockIconContainer.classList.remove('bg-red-100', 'text-red-600', 'border-red-200');
+            lockIconContainer.classList.add('bg-green-100', 'text-green-600', 'border-green-200', 'unlock-anim');
+            setTimeout(unlock, 800);
+        }
+
+        function unlock() {
+            lockScreen.style.display = 'none';
+            letterContainer.classList.remove('hidden');
+            setTimeout(() => {
+                letterContainer.classList.remove('opacity-0', 'scale-95');
+                letterContainer.classList.add('opacity-100', 'scale-100');
+            }, 50);
+        }
+
+        function relock() {
+            stopSpeaking();
+            lockIcon.className = "ph-fill ph-lock-key";
+            lockIconContainer.classList.add('bg-red-100', 'text-red-600', 'border-red-200');
+            lockIconContainer.classList.remove('bg-green-100', 'text-green-600', 'border-green-200', 'unlock-anim');
+            letterContainer.classList.add('opacity-0', 'scale-95');
+            letterContainer.classList.remove('opacity-100', 'scale-100');
+            setTimeout(() => {
+                letterContainer.classList.add('hidden');
+                lockScreen.style.display = 'block';
+                currentCode = "";
+                updateDisplay();
+            }, 300);
+        }
+
+        // TTS Logic
+        let speaking = false;
+        let speech = null;
+        const btnText = document.getElementById('btnText');
+        const speakIcon = document.getElementById('speakIcon');
+        const speakBtn = document.getElementById('speakBtn');
+        const letterTextElement = document.getElementById('letterContent');
+
+        function toggleSpeech() {
+            if (speaking) {
+                stopSpeaking();
+            } else {
+                startSpeaking();
+            }
+        }
+
+        function startSpeaking() {
+            if (!('speechSynthesis' in window)) {
+                alert("Sorry, your browser doesn't support text-to-speech!");
+                return;
+            }
+
+            window.speechSynthesis.cancel();
+            
+            const text = letterTextElement.innerText;
+            speech = new SpeechSynthesisUtterance(text);
+            
+            // APPLY SAVED SETTINGS
+            const savedName = localStorage.getItem('elfVoiceName');
+            if (savedName) {
+                const voice = voices.find(v => v.name === savedName);
+                if (voice) speech.voice = voice;
+            } else {
+                // Fallback if no setting saved yet
+                 const defaultVoice = voices.find(v => v.name.includes('Zira') || v.name.includes('Google US English') || v.name.includes('Samantha'));
+                 if(defaultVoice) speech.voice = defaultVoice;
+            }
+
+            speech.pitch = parseFloat(localStorage.getItem('elfPitch')) || 1.6;
+            speech.rate = parseFloat(localStorage.getItem('elfRate')) || 1.1;
+
+            speech.onstart = () => {
+                speaking = true;
+                btnText.textContent = "Stop Reading";
+                speakIcon.className = "ph-fill ph-stop-circle text-xl";
+                speakBtn.classList.replace('bg-red-600', 'bg-slate-600');
+                speakBtn.classList.replace('hover:bg-red-700', 'hover:bg-slate-700');
+                speakBtn.classList.replace('border-red-800', 'border-slate-800');
+            };
+
+            speech.onend = () => resetButton();
+            speech.onerror = () => resetButton();
+
+            window.speechSynthesis.speak(speech);
+        }
+
+        function stopSpeaking() {
+            window.speechSynthesis.cancel();
+            resetButton();
+        }
+
+        function resetButton() {
+            speaking = false;
+            btnText.textContent = "Read to Me";
+            speakIcon.className = "ph-fill ph-speaker-high text-xl";
+            speakBtn.classList.replace('bg-slate-600', 'bg-red-600');
+            speakBtn.classList.replace('hover:bg-slate-700', 'hover:bg-red-700');
+            speakBtn.classList.replace('border-slate-800', 'border-red-800');
+        }
+        
+        // Initialize settings
+        loadSettings();
+        // Trigger voice loading
+        populateVoiceList();
     </script>
 </body>
 </html>
