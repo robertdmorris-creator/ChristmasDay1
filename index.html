@@ -98,7 +98,7 @@
 
     <div class="max-w-2xl w-full relative">
         
-        <!-- Settings Button (Always visible for Teacher) -->
+        <!-- Settings Button (Always visible for Teacher to tweak voice if needed) -->
         <button onclick="toggleSettings()" class="fixed top-4 right-4 z-50 bg-white/80 p-2 rounded-full text-slate-400 hover:text-slate-700 hover:bg-white transition-all backdrop-blur-sm shadow-sm" title="Elf Voice Lab">
             <i class="ph-fill ph-gear text-2xl"></i>
         </button>
@@ -128,20 +128,20 @@
                         <label class="block text-sm font-bold text-slate-700 mb-2">Pitch (Squeakiness)</label>
                         <div class="flex items-center gap-3">
                             <span class="text-xs font-bold text-slate-400">Low</span>
-                            <input type="range" id="pitchRange" min="0.1" max="2" step="0.1" value="1.6" class="flex-1">
+                            <input type="range" id="pitchRange" min="0.1" max="2" step="0.1" value="1.8" class="flex-1">
                             <span class="text-xs font-bold text-slate-400">High</span>
                         </div>
-                        <div class="text-center text-sm font-mono text-purple-600 mt-1" id="pitchValue">1.6</div>
+                        <div class="text-center text-sm font-mono text-purple-600 mt-1" id="pitchValue">1.8</div>
                     </div>
 
                     <div>
                         <label class="block text-sm font-bold text-slate-700 mb-2">Speed</label>
                         <div class="flex items-center gap-3">
                             <span class="text-xs font-bold text-slate-400">Slow</span>
-                            <input type="range" id="rateRange" min="0.5" max="2" step="0.1" value="1.1" class="flex-1">
+                            <input type="range" id="rateRange" min="0.5" max="2" step="0.1" value="1.2" class="flex-1">
                             <span class="text-xs font-bold text-slate-400">Fast</span>
                         </div>
-                        <div class="text-center text-sm font-mono text-purple-600 mt-1" id="rateValue">1.1</div>
+                        <div class="text-center text-sm font-mono text-purple-600 mt-1" id="rateValue">1.2</div>
                     </div>
                 </div>
 
@@ -168,7 +168,7 @@
                     <i id="lockIcon" class="ph-fill ph-lock-key text-5xl"></i>
                 </div>
                 <h1 class="text-3xl font-bold text-green-800 mb-2 festive-font tracking-wide">Elf Security</h1>
-                <p class="text-slate-600 font-medium">Enter code 1225 to unlock</p>
+                <p class="text-slate-600 font-medium">Enter the secret code found in the room</p>
             </div>
 
             <!-- Code Display -->
@@ -273,7 +273,7 @@
     </div>
 
     <script>
-        // --- ELF VOICE LAB (New Code) ---
+        // --- ELF VOICE LAB (Updated defaults) ---
         let voices = [];
         const voiceSelect = document.getElementById('voiceSelect');
         const pitchRange = document.getElementById('pitchRange');
@@ -304,13 +304,13 @@
                 const savedIndex = voices.findIndex(v => v.name === savedName);
                 if (savedIndex > -1) voiceSelect.value = savedIndex;
             } else {
-                // Default logic
+                // Default logic - prioritize female voices which tend to pitch shift better
                 const defaultIndex = voices.findIndex(v => v.name.includes('Zira') || v.name.includes('Google US English') || v.name.includes('Samantha'));
                 if (defaultIndex > -1) voiceSelect.value = defaultIndex;
             }
         }
 
-        // Load saved settings
+        // Load saved settings or use high-pitch defaults
         function loadSettings() {
             const savedPitch = localStorage.getItem('elfPitch');
             const savedRate = localStorage.getItem('elfRate');
@@ -318,10 +318,19 @@
             if (savedPitch) {
                 pitchRange.value = savedPitch;
                 document.getElementById('pitchValue').innerText = savedPitch;
+            } else {
+                // Default High Pitch for Elf
+                pitchRange.value = 1.8;
+                document.getElementById('pitchValue').innerText = "1.8";
             }
+
             if (savedRate) {
                 rateRange.value = savedRate;
                 document.getElementById('rateValue').innerText = savedRate;
+            } else {
+                // Default Slightly Faster for Elf
+                rateRange.value = 1.2;
+                document.getElementById('rateValue').innerText = "1.2";
             }
         }
 
@@ -513,19 +522,20 @@
             const text = letterTextElement.innerText;
             speech = new SpeechSynthesisUtterance(text);
             
-            // APPLY SAVED SETTINGS
+            // APPLY SAVED SETTINGS or DEFAULTS
             const savedName = localStorage.getItem('elfVoiceName');
             if (savedName) {
                 const voice = voices.find(v => v.name === savedName);
                 if (voice) speech.voice = voice;
             } else {
-                // Fallback if no setting saved yet
+                // Fallback if no setting saved yet - Find a good base voice
                  const defaultVoice = voices.find(v => v.name.includes('Zira') || v.name.includes('Google US English') || v.name.includes('Samantha'));
                  if(defaultVoice) speech.voice = defaultVoice;
             }
 
-            speech.pitch = parseFloat(localStorage.getItem('elfPitch')) || 1.6;
-            speech.rate = parseFloat(localStorage.getItem('elfRate')) || 1.1;
+            // Force high pitch/speed if not set in localStorage yet
+            speech.pitch = parseFloat(localStorage.getItem('elfPitch')) || 1.8;
+            speech.rate = parseFloat(localStorage.getItem('elfRate')) || 1.2;
 
             speech.onstart = () => {
                 speaking = true;
