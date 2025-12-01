@@ -13,10 +13,10 @@
     <style>
         /*
          * CORE BACKGROUND STYLING
-         * Apply to both html and body to ensure full screen coverage (including smartboard)
+         * Apply to html element for full viewport coverage
          */
         html {
-            /* Candy Cane Background applied to the root element for full viewport coverage */
+            /* Default Candy Cane Background */
             background: repeating-linear-gradient(
                 45deg,
                 #ef4444,
@@ -26,6 +26,12 @@
             );
             height: 100%; /* Ensure html element takes full height */
         }
+
+        /* Full-screen mode adjustment for reliability */
+        html.is-fullscreen {
+            /* SOLID RED BACKGROUND for reliable full coverage on Smartboards */
+            background: #ef4444 !important; 
+        }
         
         body {
             font-family: 'Lexend', sans-serif;
@@ -34,15 +40,15 @@
             min-height: 100vh;
         }
 
-        /* Full-screen mode adjustment */
-        .is-fullscreen {
-            /* When in fullscreen, ensure body is positioned absolutely to fill the viewport */
+        /* Full-screen mode adjustment for body */
+        .is-fullscreen .body-content-wrapper {
+            /* Use a class on the body when fullscreen is active */
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            margin: 0 !important; /* Remove any potential margin/padding */
+            margin: 0 !important;
             
             /* Center the content */
             display: flex; 
@@ -312,23 +318,22 @@
     <script>
         // --- FULL SCREEN LOGIC ---
         const fullscreenIcon = document.getElementById('fullscreenIcon');
+        const htmlElement = document.documentElement;
 
         function toggleFullScreen() {
             if (!document.fullscreenElement) {
-                // Request full screen for the entire body element
-                document.body.requestFullscreen().then(() => {
-                    document.body.classList.add('is-fullscreen');
+                // Request full screen for the entire html element (most reliable)
+                htmlElement.requestFullscreen().then(() => {
+                    htmlElement.classList.add('is-fullscreen');
                     fullscreenIcon.className = "ph-fill ph-arrows-in-simple text-2xl";
                 }).catch(err => {
                     console.error(`Error attempting to enable full-screen mode: ${err.message}`);
-                    // Inform the user if the browser blocks it (often happens outside a user gesture)
-                    // We use an internal notification/toast instead of alert()
                     showTemporaryMessage("Full screen blocked by browser. Please click the button again or try F11.");
                 });
             } else {
                 // Exit full screen
                 document.exitFullscreen().then(() => {
-                    document.body.classList.remove('is-fullscreen');
+                    htmlElement.classList.remove('is-fullscreen');
                     fullscreenIcon.className = "ph-fill ph-arrows-out-simple text-2xl";
                 }).catch(err => {
                     console.error(`Error attempting to exit full-screen mode: ${err.message}`);
@@ -339,10 +344,10 @@
         // Listen for the official full screen change event (e.g., if user hits F11)
         document.addEventListener('fullscreenchange', () => {
             if (!document.fullscreenElement) {
-                document.body.classList.remove('is-fullscreen');
+                htmlElement.classList.remove('is-fullscreen');
                 fullscreenIcon.className = "ph-fill ph-arrows-out-simple text-2xl";
             } else {
-                document.body.classList.add('is-fullscreen');
+                htmlElement.classList.add('is-fullscreen');
                 fullscreenIcon.className = "ph-fill ph-arrows-in-simple text-2xl";
             }
         });
