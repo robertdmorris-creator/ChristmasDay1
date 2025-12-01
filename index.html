@@ -11,9 +11,12 @@
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
 
     <style>
-        body {
-            font-family: 'Lexend', sans-serif;
-            /* Candy Cane Background */
+        /*
+         * CORE BACKGROUND STYLING
+         * Apply to both html and body to ensure full screen coverage (including smartboard)
+         */
+        html {
+            /* Candy Cane Background applied to the root element for full viewport coverage */
             background: repeating-linear-gradient(
                 45deg,
                 #ef4444,
@@ -21,16 +24,32 @@
                 #f8fafc 20px,
                 #f8fafc 40px
             );
+            height: 100%; /* Ensure html element takes full height */
+        }
+        
+        body {
+            font-family: 'Lexend', sans-serif;
+            /* Remove background from body so the HTML element's background shows through */
+            background: transparent;
             min-height: 100vh;
         }
 
         /* Full-screen mode adjustment */
         .is-fullscreen {
-            /* Now retains the striped background from the body, only enforcing centering and removing padding. */
-            display: flex; /* Ensure content remains centered */
+            /* When in fullscreen, ensure body is positioned absolutely to fill the viewport */
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            margin: 0 !important; /* Remove any potential margin/padding */
+            
+            /* Center the content */
+            display: flex; 
             align-items: center;
             justify-content: center;
             padding: 0 !important;
+            box-sizing: border-box;
         }
 
         .christmas-shadow {
