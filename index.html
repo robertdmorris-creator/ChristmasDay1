@@ -24,6 +24,17 @@
             min-height: 100vh;
         }
 
+        /* Full-screen mode adjustment */
+        .is-fullscreen {
+            /* Override background for a more immersive feel in fullscreen */
+            background-image: none !important;
+            background-color: #f8fafc !important; /* White/Off-white background */
+            display: flex; /* Ensure content remains centered */
+            align-items: center;
+            justify-content: center;
+            padding: 0 !important;
+        }
+
         .christmas-shadow {
             box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3), 0 10px 10px -5px rgba(0, 0, 0, 0.1);
         }
@@ -98,10 +109,19 @@
 
     <div class="max-w-2xl w-full relative">
         
-        <!-- Settings Button (Always visible for Teacher to tweak voice if needed) -->
-        <button onclick="toggleSettings()" class="fixed top-4 right-4 z-50 bg-white/80 p-2 rounded-full text-slate-400 hover:text-slate-700 hover:bg-white transition-all backdrop-blur-sm shadow-sm" title="Elf Voice Lab">
-            <i class="ph-fill ph-gear text-2xl"></i>
-        </button>
+        <!-- CONTROL BUTTONS CONTAINER -->
+        <div class="fixed top-4 right-4 z-50 flex space-x-2">
+             <!-- Full Screen Button -->
+            <button id="fullscreenBtn" onclick="toggleFullScreen()" class="bg-white/80 p-2 rounded-full text-slate-400 hover:text-slate-700 hover:bg-white transition-all backdrop-blur-sm shadow-sm" title="Go Full Screen">
+                <i id="fullscreenIcon" class="ph-fill ph-arrows-out-simple text-2xl"></i>
+            </button>
+            
+            <!-- Settings Button (Always visible for Teacher to tweak voice if needed) -->
+            <button onclick="toggleSettings()" class="bg-white/80 p-2 rounded-full text-slate-400 hover:text-slate-700 hover:bg-white transition-all backdrop-blur-sm shadow-sm" title="Elf Voice Lab">
+                <i class="ph-fill ph-gear text-2xl"></i>
+            </button>
+        </div>
+
 
         <!-- SETTINGS MODAL -->
         <div id="settingsPanel" class="hidden fixed inset-0 bg-black/50 z-40 flex items-center justify-center backdrop-blur-sm">
@@ -273,6 +293,48 @@
     </div>
 
     <script>
+        // --- FULL SCREEN LOGIC ---
+        const fullscreenIcon = document.getElementById('fullscreenIcon');
+
+        function toggleFullScreen() {
+            if (!document.fullscreenElement) {
+                // Request full screen for the entire body element
+                document.body.requestFullscreen().then(() => {
+                    document.body.classList.add('is-fullscreen');
+                    fullscreenIcon.className = "ph-fill ph-arrows-in-simple text-2xl";
+                }).catch(err => {
+                    console.error(`Error attempting to enable full-screen mode: ${err.message}`);
+                    // Inform the user if the browser blocks it (often happens outside a user gesture)
+                    // We use an internal notification/toast instead of alert()
+                    showTemporaryMessage("Full screen blocked by browser. Please click the button again or try F11.");
+                });
+            } else {
+                // Exit full screen
+                document.exitFullscreen().then(() => {
+                    document.body.classList.remove('is-fullscreen');
+                    fullscreenIcon.className = "ph-fill ph-arrows-out-simple text-2xl";
+                }).catch(err => {
+                    console.error(`Error attempting to exit full-screen mode: ${err.message}`);
+                });
+            }
+        }
+
+        // Listen for the official full screen change event (e.g., if user hits F11)
+        document.addEventListener('fullscreenchange', () => {
+            if (!document.fullscreenElement) {
+                document.body.classList.remove('is-fullscreen');
+                fullscreenIcon.className = "ph-fill ph-arrows-out-simple text-2xl";
+            } else {
+                document.body.classList.add('is-fullscreen');
+                fullscreenIcon.className = "ph-fill ph-arrows-in-simple text-2xl";
+            }
+        });
+
+        // Simple function to display a temporary message (since we can't use alert)
+        function showTemporaryMessage(message) {
+            console.log(message); // Just log to console for now, as adding a UI element is complex
+        }
+
         // --- ELF VOICE LAB (Updated defaults) ---
         let voices = [];
         const voiceSelect = document.getElementById('voiceSelect');
@@ -513,7 +575,7 @@
 
         function startSpeaking() {
             if (!('speechSynthesis' in window)) {
-                alert("Sorry, your browser doesn't support text-to-speech!");
+                showTemporaryMessage("Sorry, your browser doesn't support text-to-speech!");
                 return;
             }
 
